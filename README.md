@@ -1,13 +1,17 @@
-## CREATE VPC :
+## Step 1:
+### CREATE VPC :
 1 PUBLIC & 2 PRIVATE SUBNET
 
-## CREATE SG :
+## Step 2:
+### CREATE SG :
 11434, 8000, 5432, 5000, 2049, 443, 80, 22
 
-## CREATE EC2 :
+## Step 3:
+### CREATE EC2 :
 DEBIAN, VPC, PUBLIC SUBNET, SG, SSH KEY, VOLUME 15GB
 
-## EC2 SETUP GUIDE
+## Step 4:
+### EC2 SETUP GUIDE
 ### Create 2GB swap file
 ```sh
 sudo fallocate -l 2G /swapfile
@@ -102,7 +106,8 @@ nano .env  # Edit if needed (default SQLite works)
 python3 -c "import db; db.init_db()"
 ```
 
-### Step 5: Run with Systemd (Production)
+## Step 5: 
+### Run with Systemd (Production)
 ### Create service file:
 ```sh
 sudo nano /etc/systemd/system/chatapp.service

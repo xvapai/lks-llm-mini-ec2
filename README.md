@@ -1,23 +1,25 @@
-# CREATE VPC :
+## CREATE VPC :
 1 PUBLIC & 2 PRIVATE SUBNET
 
-# CREATE SG :
+## CREATE SG :
 11434, 8000, 5432, 5000, 2049, 443, 80, 22
 
-# CREATE EC2 :
+## CREATE EC2 :
 DEBIAN, VPC, PUBLIC SUBNET, SG, SSH KEY, VOLUME 15GB
 
-# EC2 SETUP GUIDE
-## Create 2GB swap file
+## EC2 SETUP GUIDE
+### Create 2GB swap file
+```sh
 sudo fallocate -l 2G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
+```
 
-## Make permanent
+### Make permanent
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
-# Verify
+### Verify
 free -h
 
 -- Why: t2.micro has only 1GB RAM. Ollama + model needs ~1.5-2GB. Swap prevents OOM kills. --

@@ -1,492 +1,678 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Low-Resource AI Chat</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Neural AI — Chat Interface</title>
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --glass-bg: rgba(20, 20, 40, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --accent: #8b5cf6;
+            --accent-2: #6366f1;
+            --text-main: #ffffff;
+            --text-muted: rgba(255,255,255,0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
-            height: 100vh;
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top left, #1e1b4b, #020617 60%);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* ===============================
+           NAVBAR
+        =============================== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10, 10, 30, 0.55);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.3px;
+        }
+
+        .brand i {
+            color: var(--accent);
+            font-size: 1.25rem;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 14px;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            color: white;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(139,92,246,0.35);
+            background: rgba(255,255,255,0.12);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-2), var(--accent));
+            border: none;
+            box-shadow: 0 10px 30px rgba(139,92,246,0.35);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 14px 36px rgba(139,92,246,0.55);
+        }
+
+        /* ===============================
+           HERO SECTION
+        =============================== */
+        .hero {
+            padding: 6rem 2rem 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        @media (max-width: 900px) {
+            .hero {
+                grid-template-columns: 1fr;
+                padding-top: 4rem;
+            }
+        }
+
+        .hero-left h1 {
+            font-size: clamp(2.2rem, 4vw, 3.2rem);
+            line-height: 1.15;
+            margin: 0 0 1.25rem;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-left h1 span {
+            background: linear-gradient(135deg, var(--accent-2), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-left p {
+            max-width: 520px;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* ===============================
+           GLASS CARD (RIGHT)
+        =============================== */
+        .glass-card {
+            position: relative;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 1.75rem 1.75rem 2rem;
+            box-shadow: 0 0 80px rgba(139,92,246,0.35);
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            background: linear-gradient(
+                120deg,
+                transparent 20%,
+                rgba(139,92,246,0.5),
+                transparent 80%
+            );
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        .glass-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+
+        .glass-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .glass-title i {
+            color: var(--accent);
+        }
+
+        .status-pill {
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: rgba(16,185,129,0.15);
+            color: #34d399;
+            border: 1px solid rgba(16,185,129,0.25);
+        }
+
+        .code-window {
+            background: rgba(0,0,0,0.35);
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 1rem 1.1rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.8rem;
+            line-height: 1.55;
+            color: rgba(255,255,255,0.85);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .code-window .cmd {
+            color: #93c5fd;
+        }
+
+        .code-window .ok {
+            color: #86efac;
+        }
+
+        .code-window .warn {
+            color: #facc15;
+        }
+
+        /* ===============================
+           FEATURES
+        =============================== */
+        .features {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem 5rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .feature-card {
+            background: rgba(20, 20, 40, 0.55);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 22px;
+            padding: 1.5rem 1.5rem 1.75rem;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(139,92,246,0.25);
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-2), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 8px 20px rgba(139,92,246,0.45);
+        }
+
+        .feature-icon i {
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .feature-title {
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.3px;
+        }
+
+        .feature-desc {
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+
+        /* ===============================
+           FOOTER
+        =============================== */
+        footer {
+            padding: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.55);
+            background: rgba(10, 10, 30, 0.45);
+            backdrop-filter: blur(16px);
+        }
+
+        /* ===============================
+           CHAT OVERLAY
+        =============================== */
+        .chat-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 30, 0.6);
+            backdrop-filter: blur(20px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .chat-overlay.active {
+            display: flex;
+        }
+
+        .chat-window {
+            width: min(900px, 95%);
+            height: 80vh;
+            background: rgba(20, 20, 40, 0.7);
+            backdrop-filter: blur(40px);
+            border-radius: 28px;
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 0 90px rgba(139,92,246,0.45);
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
-        .header {
-            background: #1e293b;
-            padding: 1rem;
-            border-bottom: 1px solid #334155;
+
+        .chat-header {
+            padding: 1rem 1.5rem;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .header h1 {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-        .header .status {
-            font-size: 0.8rem;
-            color: #94a3b8;
-        }
-        .header .status.connected { color: #10b981; }
-        .header .status.error { color: #ef4444; }
-        .controls {
+
+        .chat-title {
+            font-weight: 700;
             display: flex;
             gap: 0.5rem;
+            align-items: center;
+            letter-spacing: 0.3px;
         }
-        .btn {
-            background: #334155;
-            border: none;
-            color: #e2e8f0;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            font-size: 0.875rem;
-            transition: background 0.2s;
+
+        .chat-title i {
+            color: var(--accent);
         }
-        .btn:hover { background: #475569; }
-        .btn:active { background: #1e293b; }
-        .btn.danger { background: #991b1b; }
-        .btn.danger:hover { background: #b91c1c; }
-        .chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .message {
-            max-width: 80%;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            line-height: 1.5;
-        }
-        .message.user {
-            background: #3b82f6;
-            align-self: flex-end;
-            margin-left: auto;
-        }
-        .message.assistant {
-            background: #1e293b;
-            align-self: flex-start;
-            border: 1px solid #334155;
-        }
-        .message.system {
-            background: #064e3b;
-            align-self: center;
-            font-size: 0.875rem;
-            color: #6ee7b7;
-        }
-        .message.error {
-            background: #450a0a;
-            border: 1px solid #991b1b;
-            align-self: stretch;
-            max-width: 100%;
-            color: #fca5a5;
-        }
-        .message.error .error-title {
-            font-weight: 600;
-            color: #ef4444;
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }
-        .message.error .error-detail {
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            background: #1c0a0a;
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            margin-top: 0.5rem;
-            white-space: pre-wrap;
-            word-break: break-word;
-            color: #fecaca;
-        }
-        .message.error .error-suggestions {
-            margin-top: 0.75rem;
-            padding-top: 0.75rem;
-            border-top: 1px solid #991b1b;
-        }
-        .message.error .error-suggestions li {
-            margin-left: 1.5rem;
-            margin-top: 0.25rem;
-            color: #fbbf24;
-        }
-        .input-area {
-            background: #1e293b;
-            border-top: 1px solid #334155;
-            padding: 1rem;
-            display: flex;
-            gap: 0.5rem;
-        }
-        .input-area input {
-            flex: 1;
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: #e2e8f0;
-            padding: 0.75rem;
-            border-radius: 0.375rem;
-            font-size: 1rem;
-        }
-        .input-area input:focus {
-            outline: none;
-            border-color: #3b82f6;
-        }
-        .input-area button {
-            background: #3b82f6;
+
+        .chat-close {
+            background: none;
             border: none;
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.375rem;
+            font-size: 1.2rem;
             cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s;
+            opacity: 0.8;
+            transition: opacity 0.15s ease;
         }
-        .input-area button:hover { background: #2563eb; }
-        .input-area button:disabled {
-            background: #334155;
-            cursor: not-allowed;
+
+        .chat-close:hover {
+            opacity: 1;
         }
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 0.5rem;
-            color: #94a3b8;
-            font-size: 0.875rem;
-        }
-        .loading.active { display: block; }
-        .debug-panel {
-            background: #1e293b;
-            border-top: 1px solid #334155;
-            padding: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.75rem;
-            color: #94a3b8;
-            max-height: 150px;
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
         }
-        .debug-panel .log-entry {
-            padding: 0.25rem 0;
-            border-bottom: 1px solid #334155;
+
+        .chat-bubble {
+            max-width: 75%;
+            padding: 0.75rem 1rem;
+            border-radius: 16px;
+            line-height: 1.55;
+            font-size: 0.9rem;
+            word-wrap: break-word;
+            white-space: pre-wrap;
         }
-        .debug-panel .log-entry.error { color: #ef4444; }
-        .debug-panel .log-entry.success { color: #10b981; }
-        .debug-panel .log-entry.info { color: #3b82f6; }
+
+        .chat-bubble.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--accent-2), var(--accent));
+            box-shadow: 0 8px 22px rgba(139,92,246,0.45);
+        }
+
+        .chat-bubble.ai {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.05);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chat-input input {
+            flex: 1;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 14px;
+            padding: 0.7rem 0.9rem;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .chat-input input::placeholder {
+            color: rgba(255,255,255,0.45);
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(139,92,246,0.25);
+        }
+
+        .chat-input button {
+            background: linear-gradient(135deg, var(--accent-2), var(--accent));
+            border: none;
+            border-radius: 14px;
+            padding: 0 1rem;
+            color: white;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 22px rgba(139,92,246,0.45);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .chat-input button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 30px rgba(139,92,246,0.6);
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div>
-            <h1>🤖 AI Chat (Low-Resource)</h1>
-            <div class="status" id="status">Checking connection...</div>
+
+    <!-- ===============================
+         NAVBAR
+    =============================== -->
+    <nav class="navbar">
+        <div class="brand">
+            <i class="bi bi-cpu-fill"></i>
+            <span>Neural AI</span>
         </div>
-        <div class="controls">
-            <button class="btn" onclick="testBackend()">Test Backend</button>
-            <button class="btn" onclick="clearChat()">Clear Chat</button>
-            <button class="btn danger" onclick="toggleDebug()">Toggle Debug</button>
+        <div class="nav-actions">
+            <button class="btn">
+                <i class="bi bi-github"></i>
+                <span>GitHub</span>
+            </button>
+            <button class="btn btn-primary" onclick="openChat()">
+                <i class="bi bi-chat-dots"></i>
+                <span>Start Chatting</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ===============================
+         HERO SECTION
+    =============================== -->
+    <section class="hero">
+        <div class="hero-left">
+            <h1>
+                Build smarter apps with
+                <span>Neural AI</span>
+            </h1>
+            <p>
+                A lightweight, production-ready chat interface for your local or cloud-hosted
+                LLM backend. Designed with liquid glass aesthetics, fast performance, and zero
+                build tools — just HTML, CSS, and JavaScript.
+            </p>
+            <div class="hero-actions">
+                <button class="btn btn-primary" onclick="openChat()">
+                    <i class="bi bi-chat-dots-fill"></i>
+                    <span>Start Chatting</span>
+                </button>
+                <button class="btn">
+                    <i class="bi bi-book"></i>
+                    <span>Docs</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="glass-header">
+                <div class="glass-title">
+                    <i class="bi bi-terminal"></i>
+                    <span>Backend Status</span>
+                </div>
+                <div class="status-pill" id="backendStatus">Checking</div>
+            </div>
+            <div class="code-window" id="statusLog">
+<span class="cmd">$</span> curl http://localhost:8000/health
+<span class="warn">...</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===============================
+         FEATURES
+    =============================== -->
+    <section class="features">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="bi bi-lightning-charge-fill"></i>
+            </div>
+            <div class="feature-title">Fast & Lightweight</div>
+            <div class="feature-desc">
+                Pure HTML, CSS, and JavaScript. No React, no bundlers, no heavy dependencies —
+                ideal for low-memory EC2 or edge servers.
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <div class="feature-title">Backend Agnostic</div>
+            <div class="feature-desc">
+                Works with FastAPI, Flask, Express, or serverless APIs — just expose a
+                <code>/chat</code> endpoint and you're ready.
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="bi bi-brush-fill"></i>
+            </div>
+            <div class="feature-title">Modern Glass UI</div>
+            <div class="feature-desc">
+                Liquid glass design with smooth blur, gradients, and subtle glow — perfect for
+                AI dashboards and demo apps.
+            </div>
+        </div>
+    </section>
+
+    <!-- ===============================
+         FOOTER
+    =============================== -->
+    <footer>
+        © 2026 Neural AI UI — Built for local LLM and cloud inference testing.
+    </footer>
+
+    <!-- ===============================
+         CHAT OVERLAY
+    =============================== -->
+    <div class="chat-overlay" id="chatOverlay">
+        <div class="chat-window">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <i class="bi bi-cpu"></i>
+                    <span>Neural AI Chat</span>
+                </div>
+                <button class="chat-close" onclick="closeChat()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages"></div>
+
+            <div class="chat-input">
+                <input id="chatInput" placeholder="Type your message..." onkeydown="if(event.key==='Enter') sendChat()" />
+                <button onclick="sendChat()">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="chat-container" id="chat"></div>
-
-    <div class="loading" id="loading">AI is thinking...</div>
-
-    <div class="debug-panel" id="debugPanel" style="display: none;"></div>
-
-    <div class="input-area">
-        <input
-            type="text"
-            id="input"
-            placeholder="Type your message..."
-            onkeypress="if(event.key==='Enter') sendMessage()"
-        />
-        <button onclick="sendMessage()" id="sendBtn">Send</button>
-    </div>
-
+    <!-- ===============================
+         SCRIPT
+    =============================== -->
     <script>
         const API_BASE = window.location.origin;
-        const chat = document.getElementById('chat');
-        const input = document.getElementById('input');
-        const sendBtn = document.getElementById('sendBtn');
-        const loading = document.getElementById('loading');
-        const status = document.getElementById('status');
-        const debugPanel = document.getElementById('debugPanel');
 
-        // Debug logging
-        function log(message, type = 'info') {
-            const entry = document.createElement('div');
-            entry.className = `log-entry ${type}`;
-            const timestamp = new Date().toLocaleTimeString();
-            entry.textContent = `[${timestamp}] ${message}`;
-            debugPanel.appendChild(entry);
-            debugPanel.scrollTop = debugPanel.scrollHeight;
-            console.log(`[${type.toUpperCase()}]`, message);
-        }
+        async function checkBackend() {
+            const statusPill = document.getElementById('backendStatus');
+            const log = document.getElementById('statusLog');
 
-        function toggleDebug() {
-            debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
-        }
-
-        // Check health on load
-        async function checkHealth() {
-            log('Checking backend health...', 'info');
             try {
-                const res = await fetch(`${API_BASE}/health`);
+                const res = await fetch(API_BASE + '/health');
+                if (!res.ok) throw new Error('Not OK');
+
                 const data = await res.json();
+                statusPill.textContent = 'Online';
+                statusPill.style.background = 'rgba(16,185,129,0.15)';
+                statusPill.style.color = '#34d399';
+                statusPill.style.border = '1px solid rgba(16,185,129,0.25)';
 
-                log(`Health check response: ${JSON.stringify(data)}`, 'success');
+                log.innerHTML = `<span class="cmd">$</span> curl ${API_BASE}/health
+<span class="ok">✔</span> ${JSON.stringify(data, null, 2)}`;
+            } catch (err) {
+                statusPill.textContent = 'Offline';
+                statusPill.style.background = 'rgba(239,68,68,0.15)';
+                statusPill.style.color = '#f87171';
+                statusPill.style.border = '1px solid rgba(239,68,68,0.25)';
 
-                let statusText = `Connected | Model: ${data.model} | DB: ${data.database}`;
-
-                if (data.ollama === 'not running') {
-                    statusText += ' | ⚠️ Ollama NOT RUNNING';
-                    status.classList.add('error');
-                    status.classList.remove('connected');
-                    addErrorMessage(
-                        'Ollama Not Running',
-                        'Ollama service is not running. The chat will not work.',
-                        [
-                            'SSH into your server',
-                            'Run: sudo systemctl start ollama',
-                            'Run: ollama pull phi',
-                            'Refresh this page'
-                        ]
-                    );
-                } else if (data.model_available === false) {
-                    statusText += ' | ⚠️ Model not downloaded';
-                    status.classList.add('error');
-                    status.classList.remove('connected');
-                    addErrorMessage(
-                        'Model Not Found',
-                        `Model "${data.model}" is not available.`,
-                        [
-                            'SSH into your server',
-                            `Run: ollama pull ${data.model}`,
-                            'Wait for download to complete',
-                            'Refresh this page'
-                        ]
-                    );
-                } else {
-                    status.classList.add('connected');
-                    status.classList.remove('error');
-                }
-
-                status.textContent = statusText;
-            } catch (e) {
-                log(`Health check failed: ${e.message}`, 'error');
-                status.textContent = 'Backend unreachable';
-                status.classList.remove('connected');
-                status.classList.add('error');
-
-                addErrorMessage(
-                    'Backend Unreachable',
-                    `Cannot connect to backend at ${API_BASE}`,
-                    [
-                        'Check if backend is running: sudo systemctl status chatapp',
-                        'Check if port 8000 is accessible',
-                        'Check security group allows port 8000',
-                        'Try: sudo systemctl restart chatapp'
-                    ]
-                );
+                log.innerHTML = `<span class="cmd">$</span> curl ${API_BASE}/health
+<span class="warn">✖ Backend unreachable</span>`;
             }
         }
 
-        // Add message to UI
-        function addMessage(role, content) {
-            const msg = document.createElement('div');
-            msg.className = `message ${role}`;
-            msg.textContent = content;
-            chat.appendChild(msg);
-            chat.scrollTop = chat.scrollHeight;
-        }
+        function openChat() {
+            const overlay = document.getElementById('chatOverlay');
+            const messages = document.getElementById('chatMessages');
+            overlay.classList.add('active');
 
-        // Add detailed error message
-        function addErrorMessage(title, detail, suggestions = []) {
-            const msg = document.createElement('div');
-            msg.className = 'message error';
-
-            let html = `<div class="error-title">❌ ${title}</div>`;
-            html += `<div>${detail}</div>`;
-
-            if (suggestions.length > 0) {
-                html += '<div class="error-suggestions"><strong>How to fix:</strong><ul>';
-                suggestions.forEach(s => {
-                    html += `<li>${s}</li>`;
-                });
-                html += '</ul></div>';
+            if (messages.children.length === 0) {
+                addBubble('ai', "Hello! I'm Neural AI. How can I help you today?");
             }
 
-            msg.innerHTML = html;
-            chat.appendChild(msg);
-            chat.scrollTop = chat.scrollHeight;
+            setTimeout(() => {
+                document.getElementById('chatInput').focus();
+            }, 50);
         }
 
-        // Send message
-        async function sendMessage() {
-            const message = input.value.trim();
-            if (!message) return;
+        function closeChat() {
+            document.getElementById('chatOverlay').classList.remove('active');
+        }
 
-            // Disable input
-            input.disabled = true;
-            sendBtn.disabled = true;
-            loading.classList.add('active');
+        function addBubble(role, text) {
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${role}`;
+            bubble.textContent = text;
 
-            // Show user message
-            addMessage('user', message);
+            const messages = document.getElementById('chatMessages');
+            messages.appendChild(bubble);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            addBubble('user', msg);
             input.value = '';
 
-            log(`Sending message: "${message}"`, 'info');
-
             try {
-                const res = await fetch(`${API_BASE}/chat`, {
+                const res = await fetch(API_BASE + '/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        message: message,
+                        message: msg,
                         use_history: true
                     })
                 });
 
-                log(`Response status: ${res.status}`, res.ok ? 'success' : 'error');
-
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    log(`Error response: ${JSON.stringify(errorData)}`, 'error');
-
-                    let suggestions = [];
-
-                    // Parse error and provide solutions
-                    if (errorData.detail) {
-                        const detail = errorData.detail.toLowerCase();
-
-                        if (detail.includes('ollama') && detail.includes('not running')) {
-                            suggestions = [
-                                'Run: sudo systemctl start ollama',
-                                'Run: sudo systemctl enable ollama',
-                                'Verify with: sudo systemctl status ollama'
-                            ];
-                        } else if (detail.includes('model') && detail.includes('not found')) {
-                            suggestions = [
-                                'Run: ollama list (to see available models)',
-                                'Run: ollama pull phi (to download the model)',
-                                'Or change model in .env file'
-                            ];
-                        } else if (detail.includes('timeout')) {
-                            suggestions = [
-                                'The model is too slow for your message',
-                                'Try a shorter message',
-                                'Or use a smaller model (tinyllama)'
-                            ];
-                        } else if (detail.includes('connect')) {
-                            suggestions = [
-                                'Backend cannot reach Ollama',
-                                'Check: curl http://localhost:11434/api/tags',
-                                'Restart Ollama: sudo systemctl restart ollama'
-                            ];
-                        }
-                    }
-
-                    addErrorMessage(
-                        `Error ${res.status}`,
-                        errorData.detail || 'Unknown error occurred',
-                        suggestions
-                    );
-
-                    throw new Error(errorData.detail || 'Request failed');
-                }
-
                 const data = await res.json();
-                log(`Received response from ${data.model}`, 'success');
-                addMessage('assistant', data.response);
-
-            } catch (e) {
-                log(`Exception: ${e.message}`, 'error');
-                if (!e.message.includes('Error')) {
-                    addErrorMessage(
-                        'Network Error',
-                        e.message,
-                        [
-                            'Check your internet connection',
-                            'Verify backend is running',
-                            'Check browser console (F12) for details'
-                        ]
-                    );
-                }
-            } finally {
-                input.disabled = false;
-                sendBtn.disabled = false;
-                loading.classList.remove('active');
-                input.focus();
+                addBubble('ai', data.response || 'No response from backend.');
+            } catch (err) {
+                addBubble('ai', 'Backend unreachable. Check server or CORS.');
             }
         }
 
-        // Test backend
-        async function testBackend() {
-            log('Running backend tests...', 'info');
-
-            // Test 1: Health
-            try {
-                const health = await fetch(`${API_BASE}/health`);
-                const healthData = await health.json();
-                log(`✓ Health check: ${JSON.stringify(healthData)}`, 'success');
-            } catch (e) {
-                log(`✗ Health check failed: ${e.message}`, 'error');
-            }
-
-            // Test 2: History
-            try {
-                const history = await fetch(`${API_BASE}/history`);
-                const historyData = await history.json();
-                log(`✓ History: ${historyData.history.length} messages`, 'success');
-            } catch (e) {
-                log(`✗ History failed: ${e.message}`, 'error');
-            }
-
-            // Test 3: Simple chat
-            try {
-                log('Testing chat endpoint with simple message...', 'info');
-                const chat = await fetch(`${API_BASE}/chat`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: 'hi', use_history: false })
-                });
-
-                if (chat.ok) {
-                    const chatData = await chat.json();
-                    log(`✓ Chat test successful: ${chatData.response.substring(0, 50)}...`, 'success');
-                } else {
-                    const errorData = await chat.json();
-                    log(`✗ Chat test failed: ${JSON.stringify(errorData)}`, 'error');
-                }
-            } catch (e) {
-                log(`✗ Chat test failed: ${e.message}`, 'error');
-            }
-
-            addMessage('system', 'Backend test complete. Check debug panel for results.');
-            debugPanel.style.display = 'block';
-        }
-
-        // Clear chat
-        async function clearChat() {
-            if (!confirm('Clear all chat history?')) return;
-
-            try {
-                await fetch(`${API_BASE}/history`, { method: 'DELETE' });
-                chat.innerHTML = '';
-                addMessage('system', 'Chat history cleared');
-                log('Chat history cleared', 'success');
-            } catch (e) {
-                log(`Clear failed: ${e.message}`, 'error');
-                addMessage('system', `Error: ${e.message}`);
-            }
-        }
-
-        // Initialize
-        log('Frontend initialized', 'info');
-        checkHealth();
-        addMessage('system', 'Welcome! Type a message to start chatting. Click "Toggle Debug" to see logs.');
+        // Initial backend check
+        checkBackend();
     </script>
+
 </body>
 </html>

@@ -31,6 +31,7 @@
             color: #94a3b8;
         }
         .header .status.connected { color: #10b981; }
+        .header .status.error { color: #ef4444; }
         .controls {
             display: flex;
             gap: 0.5rem;
@@ -47,6 +48,8 @@
         }
         .btn:hover { background: #475569; }
         .btn:active { background: #1e293b; }
+        .btn.danger { background: #991b1b; }
+        .btn.danger:hover { background: #b91c1c; }
         .chat-container {
             flex: 1;
             overflow-y: auto;
@@ -76,6 +79,40 @@
             align-self: center;
             font-size: 0.875rem;
             color: #6ee7b7;
+        }
+        .message.error {
+            background: #450a0a;
+            border: 1px solid #991b1b;
+            align-self: stretch;
+            max-width: 100%;
+            color: #fca5a5;
+        }
+        .message.error .error-title {
+            font-weight: 600;
+            color: #ef4444;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        .message.error .error-detail {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            background: #1c0a0a;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            margin-top: 0.5rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: #fecaca;
+        }
+        .message.error .error-suggestions {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #991b1b;
+        }
+        .message.error .error-suggestions li {
+            margin-left: 1.5rem;
+            margin-top: 0.25rem;
+            color: #fbbf24;
         }
         .input-area {
             background: #1e293b;
@@ -120,6 +157,23 @@
             font-size: 0.875rem;
         }
         .loading.active { display: block; }
+        .debug-panel {
+            background: #1e293b;
+            border-top: 1px solid #334155;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .debug-panel .log-entry {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #334155;
+        }
+        .debug-panel .log-entry.error { color: #ef4444; }
+        .debug-panel .log-entry.success { color: #10b981; }
+        .debug-panel .log-entry.info { color: #3b82f6; }
     </style>
 </head>
 <body>
@@ -129,19 +183,22 @@
             <div class="status" id="status">Checking connection...</div>
         </div>
         <div class="controls">
+            <button class="btn" onclick="testBackend()">Test Backend</button>
             <button class="btn" onclick="clearChat()">Clear Chat</button>
-            <button class="btn" onclick="loadHistory()">Load History</button>
+            <button class="btn danger" onclick="toggleDebug()">Toggle Debug</button>
         </div>
     </div>
 
     <div class="chat-container" id="chat"></div>
-    
+
     <div class="loading" id="loading">AI is thinking...</div>
 
+    <div class="debug-panel" id="debugPanel" style="display: none;"></div>
+
     <div class="input-area">
-        <input 
-            type="text" 
-            id="input" 
+        <input
+            type="text"
+            id="input"
             placeholder="Type your message..."
             onkeypress="if(event.key==='Enter') sendMessage()"
         />
@@ -155,17 +212,84 @@
         const sendBtn = document.getElementById('sendBtn');
         const loading = document.getElementById('loading');
         const status = document.getElementById('status');
+        const debugPanel = document.getElementById('debugPanel');
+
+        // Debug logging
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            debugPanel.appendChild(entry);
+            debugPanel.scrollTop = debugPanel.scrollHeight;
+            console.log(`[${type.toUpperCase()}]`, message);
+        }
+
+        function toggleDebug() {
+            debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+        }
 
         // Check health on load
         async function checkHealth() {
+            log('Checking backend health...', 'info');
             try {
                 const res = await fetch(`${API_BASE}/health`);
                 const data = await res.json();
-                status.textContent = `Connected | Model: ${data.model} | DB: ${data.database}`;
-                status.classList.add('connected');
+
+                log(`Health check response: ${JSON.stringify(data)}`, 'success');
+
+                let statusText = `Connected | Model: ${data.model} | DB: ${data.database}`;
+
+                if (data.ollama === 'not running') {
+                    statusText += ' | ⚠️ Ollama NOT RUNNING';
+                    status.classList.add('error');
+                    status.classList.remove('connected');
+                    addErrorMessage(
+                        'Ollama Not Running',
+                        'Ollama service is not running. The chat will not work.',
+                        [
+                            'SSH into your server',
+                            'Run: sudo systemctl start ollama',
+                            'Run: ollama pull phi',
+                            'Refresh this page'
+                        ]
+                    );
+                } else if (data.model_available === false) {
+                    statusText += ' | ⚠️ Model not downloaded';
+                    status.classList.add('error');
+                    status.classList.remove('connected');
+                    addErrorMessage(
+                        'Model Not Found',
+                        `Model "${data.model}" is not available.`,
+                        [
+                            'SSH into your server',
+                            `Run: ollama pull ${data.model}`,
+                            'Wait for download to complete',
+                            'Refresh this page'
+                        ]
+                    );
+                } else {
+                    status.classList.add('connected');
+                    status.classList.remove('error');
+                }
+
+                status.textContent = statusText;
             } catch (e) {
+                log(`Health check failed: ${e.message}`, 'error');
                 status.textContent = 'Backend unreachable';
                 status.classList.remove('connected');
+                status.classList.add('error');
+
+                addErrorMessage(
+                    'Backend Unreachable',
+                    `Cannot connect to backend at ${API_BASE}`,
+                    [
+                        'Check if backend is running: sudo systemctl status chatapp',
+                        'Check if port 8000 is accessible',
+                        'Check security group allows port 8000',
+                        'Try: sudo systemctl restart chatapp'
+                    ]
+                );
             }
         }
 
@@ -174,6 +298,27 @@
             const msg = document.createElement('div');
             msg.className = `message ${role}`;
             msg.textContent = content;
+            chat.appendChild(msg);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // Add detailed error message
+        function addErrorMessage(title, detail, suggestions = []) {
+            const msg = document.createElement('div');
+            msg.className = 'message error';
+
+            let html = `<div class="error-title">❌ ${title}</div>`;
+            html += `<div>${detail}</div>`;
+
+            if (suggestions.length > 0) {
+                html += '<div class="error-suggestions"><strong>How to fix:</strong><ul>';
+                suggestions.forEach(s => {
+                    html += `<li>${s}</li>`;
+                });
+                html += '</ul></div>';
+            }
+
+            msg.innerHTML = html;
             chat.appendChild(msg);
             chat.scrollTop = chat.scrollHeight;
         }
@@ -192,26 +337,83 @@
             addMessage('user', message);
             input.value = '';
 
+            log(`Sending message: "${message}"`, 'info');
+
             try {
                 const res = await fetch(`${API_BASE}/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         message: message,
-                        use_history: true 
+                        use_history: true
                     })
                 });
 
+                log(`Response status: ${res.status}`, res.ok ? 'success' : 'error');
+
                 if (!res.ok) {
-                    const error = await res.json();
-                    throw new Error(error.detail || 'Request failed');
+                    const errorData = await res.json();
+                    log(`Error response: ${JSON.stringify(errorData)}`, 'error');
+
+                    let suggestions = [];
+
+                    // Parse error and provide solutions
+                    if (errorData.detail) {
+                        const detail = errorData.detail.toLowerCase();
+
+                        if (detail.includes('ollama') && detail.includes('not running')) {
+                            suggestions = [
+                                'Run: sudo systemctl start ollama',
+                                'Run: sudo systemctl enable ollama',
+                                'Verify with: sudo systemctl status ollama'
+                            ];
+                        } else if (detail.includes('model') && detail.includes('not found')) {
+                            suggestions = [
+                                'Run: ollama list (to see available models)',
+                                'Run: ollama pull phi (to download the model)',
+                                'Or change model in .env file'
+                            ];
+                        } else if (detail.includes('timeout')) {
+                            suggestions = [
+                                'The model is too slow for your message',
+                                'Try a shorter message',
+                                'Or use a smaller model (tinyllama)'
+                            ];
+                        } else if (detail.includes('connect')) {
+                            suggestions = [
+                                'Backend cannot reach Ollama',
+                                'Check: curl http://localhost:11434/api/tags',
+                                'Restart Ollama: sudo systemctl restart ollama'
+                            ];
+                        }
+                    }
+
+                    addErrorMessage(
+                        `Error ${res.status}`,
+                        errorData.detail || 'Unknown error occurred',
+                        suggestions
+                    );
+
+                    throw new Error(errorData.detail || 'Request failed');
                 }
 
                 const data = await res.json();
+                log(`Received response from ${data.model}`, 'success');
                 addMessage('assistant', data.response);
 
             } catch (e) {
-                addMessage('system', `Error: ${e.message}`);
+                log(`Exception: ${e.message}`, 'error');
+                if (!e.message.includes('Error')) {
+                    addErrorMessage(
+                        'Network Error',
+                        e.message,
+                        [
+                            'Check your internet connection',
+                            'Verify backend is running',
+                            'Check browser console (F12) for details'
+                        ]
+                    );
+                }
             } finally {
                 input.disabled = false;
                 sendBtn.disabled = false;
@@ -220,41 +422,71 @@
             }
         }
 
+        // Test backend
+        async function testBackend() {
+            log('Running backend tests...', 'info');
+
+            // Test 1: Health
+            try {
+                const health = await fetch(`${API_BASE}/health`);
+                const healthData = await health.json();
+                log(`✓ Health check: ${JSON.stringify(healthData)}`, 'success');
+            } catch (e) {
+                log(`✗ Health check failed: ${e.message}`, 'error');
+            }
+
+            // Test 2: History
+            try {
+                const history = await fetch(`${API_BASE}/history`);
+                const historyData = await history.json();
+                log(`✓ History: ${historyData.history.length} messages`, 'success');
+            } catch (e) {
+                log(`✗ History failed: ${e.message}`, 'error');
+            }
+
+            // Test 3: Simple chat
+            try {
+                log('Testing chat endpoint with simple message...', 'info');
+                const chat = await fetch(`${API_BASE}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: 'hi', use_history: false })
+                });
+
+                if (chat.ok) {
+                    const chatData = await chat.json();
+                    log(`✓ Chat test successful: ${chatData.response.substring(0, 50)}...`, 'success');
+                } else {
+                    const errorData = await chat.json();
+                    log(`✗ Chat test failed: ${JSON.stringify(errorData)}`, 'error');
+                }
+            } catch (e) {
+                log(`✗ Chat test failed: ${e.message}`, 'error');
+            }
+
+            addMessage('system', 'Backend test complete. Check debug panel for results.');
+            debugPanel.style.display = 'block';
+        }
+
         // Clear chat
         async function clearChat() {
             if (!confirm('Clear all chat history?')) return;
-            
+
             try {
                 await fetch(`${API_BASE}/history`, { method: 'DELETE' });
                 chat.innerHTML = '';
                 addMessage('system', 'Chat history cleared');
+                log('Chat history cleared', 'success');
             } catch (e) {
-                addMessage('system', `Error: ${e.message}`);
-            }
-        }
-
-        // Load history
-        async function loadHistory() {
-            try {
-                const res = await fetch(`${API_BASE}/history?limit=20`);
-                const data = await res.json();
-                
-                chat.innerHTML = '';
-                data.history.forEach(msg => {
-                    addMessage(msg.role, msg.content);
-                });
-                
-                if (data.history.length === 0) {
-                    addMessage('system', 'No chat history found');
-                }
-            } catch (e) {
+                log(`Clear failed: ${e.message}`, 'error');
                 addMessage('system', `Error: ${e.message}`);
             }
         }
 
         // Initialize
+        log('Frontend initialized', 'info');
         checkHealth();
-        addMessage('system', 'Welcome! Type a message to start chatting.');
+        addMessage('system', 'Welcome! Type a message to start chatting. Click "Toggle Debug" to see logs.');
     </script>
 </body>
 </html>

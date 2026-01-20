@@ -401,6 +401,34 @@
             border: 1px solid rgba(255,255,255,0.12);
         }
 
+        /* ===============================
+           AI THINKING INDICATOR
+        =============================== */
+        .chat-thinking {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+            animation: fadeIn 0.15s ease;
+        }
+
+        .thinking-dots span {
+            animation: blink 1.4s infinite both;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes blink {
+            0% { opacity: 0.2; }
+            20% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+
         .chat-input {
             display: flex;
             gap: 0.75rem;
@@ -448,6 +476,11 @@
             transform: translateY(-1px);
             box-shadow: 0 12px 30px rgba(139,92,246,0.6);
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -472,8 +505,7 @@
     </div>
 </nav>
 
-
-    <!-- ===============================
+<!-- ===============================
          HERO SECTION
 =============================== -->
 <section class="hero">
@@ -514,166 +546,197 @@
     </div>
 </section>
 
-    <!-- ===============================
+<!-- ===============================
          FEATURES
-    =============================== -->
-    <section class="features">
-        <div class="feature-card">
-            <div class="feature-icon">
-                <i class="bi bi-lightning-charge-fill"></i>
-            </div>
-            <div class="feature-title">Fast & Lightweight</div>
-            <div class="feature-desc">
-                Pure HTML, CSS, and JavaScript. No React, no bundlers, no heavy dependencies —
-                ideal for low-memory EC2 or edge servers.
-            </div>
+=============================== -->
+<section class="features">
+    <div class="feature-card">
+        <div class="feature-icon">
+            <i class="bi bi-lightning-charge-fill"></i>
         </div>
-
-        <div class="feature-card">
-            <div class="feature-icon">
-                <i class="bi bi-shield-lock-fill"></i>
-            </div>
-            <div class="feature-title">Backend Agnostic</div>
-            <div class="feature-desc">
-                Works with FastAPI, Flask, Express, or serverless APIs — just expose a
-                <code>/chat</code> endpoint and you're ready.
-            </div>
-        </div>
-
-        <div class="feature-card">
-            <div class="feature-icon">
-                <i class="bi bi-brush-fill"></i>
-            </div>
-            <div class="feature-title">Modern Glass UI</div>
-            <div class="feature-desc">
-                Liquid glass design with smooth blur, gradients, and subtle glow — perfect for
-                AI dashboards and demo apps.
-            </div>
-        </div>
-    </section>
-
-    <!-- ===============================
-         FOOTER
-    =============================== -->
-    <footer>
-        © 2026 Neural AI UI — Built for local LLM and cloud inference testing.
-    </footer>
-
-    <!-- ===============================
-         CHAT OVERLAY
-    =============================== -->
-    <div class="chat-overlay" id="chatOverlay">
-        <div class="chat-window">
-            <div class="chat-header">
-                <div class="chat-title">
-                    <i class="bi bi-cpu"></i>
-                    <span>Neural AI Chat</span>
-                </div>
-                <button class="chat-close" onclick="closeChat()">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-
-            <div class="chat-messages" id="chatMessages"></div>
-
-            <div class="chat-input">
-                <input id="chatInput" placeholder="Type your message..." onkeydown="if(event.key==='Enter') sendChat()" />
-                <button onclick="sendChat()">
-                    <i class="bi bi-send-fill"></i>
-                </button>
-            </div>
+        <div class="feature-title">Fast & Lightweight</div>
+        <div class="feature-desc">
+            Pure HTML, CSS, and JavaScript. No React, no bundlers, no heavy dependencies —
+            ideal for low-memory EC2 or edge servers.
         </div>
     </div>
 
-    <!-- ===============================
+    <div class="feature-card">
+        <div class="feature-icon">
+            <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        <div class="feature-title">Backend Agnostic</div>
+        <div class="feature-desc">
+            Works with FastAPI, Flask, Express, or serverless APIs — just expose a
+            <code>/chat</code> endpoint and you're ready.
+        </div>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">
+            <i class="bi bi-brush-fill"></i>
+        </div>
+        <div class="feature-title">Modern Glass UI</div>
+        <div class="feature-desc">
+            Liquid glass design with smooth blur, gradients, and subtle glow — perfect for
+            AI dashboards and demo apps.
+        </div>
+    </div>
+</section>
+
+<!-- ===============================
+         FOOTER
+=============================== -->
+<footer>
+    © 2026 Neural AI UI — Built for local LLM and cloud inference testing.
+</footer>
+
+<!-- ===============================
+         CHAT OVERLAY
+=============================== -->
+<div class="chat-overlay" id="chatOverlay">
+    <div class="chat-window">
+        <div class="chat-header">
+            <div class="chat-title">
+                <i class="bi bi-cpu"></i>
+                <span>Neural AI Chat</span>
+            </div>
+            <button class="chat-close" onclick="closeChat()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="chat-messages" id="chatMessages"></div>
+
+        <div class="chat-input">
+            <input id="chatInput" placeholder="Type your message..." onkeydown="if(event.key==='Enter') sendChat()" />
+            <button onclick="sendChat()">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ===============================
          SCRIPT
-    =============================== -->
-    <script>
-        const API_BASE = window.location.origin;
+=============================== -->
+<script>
+    const API_BASE = window.location.origin;
 
-        async function checkBackend() {
-            const statusPill = document.getElementById('backendStatus');
-            const log = document.getElementById('statusLog');
+    async function checkBackend() {
+        const statusPill = document.getElementById('backendStatus');
+        const log = document.getElementById('statusLog');
 
-            try {
-                const res = await fetch(API_BASE + '/health');
-                if (!res.ok) throw new Error('Not OK');
+        try {
+            const res = await fetch(API_BASE + '/health');
+            if (!res.ok) throw new Error('Not OK');
 
-                const data = await res.json();
-                statusPill.textContent = 'Online';
-                statusPill.style.background = 'rgba(16,185,129,0.15)';
-                statusPill.style.color = '#34d399';
-                statusPill.style.border = '1px solid rgba(16,185,129,0.25)';
+            const data = await res.json();
+            statusPill.textContent = 'Online';
+            statusPill.style.background = 'rgba(16,185,129,0.15)';
+            statusPill.style.color = '#34d399';
+            statusPill.style.border = '1px solid rgba(16,185,129,0.25)';
 
-                log.innerHTML = `<span class="cmd">$</span> curl ${API_BASE}/health
+            log.innerHTML = `<span class="cmd">$</span> curl ${API_BASE}/health
 <span class="ok">✔</span> ${JSON.stringify(data, null, 2)}`;
-            } catch (err) {
-                statusPill.textContent = 'Offline';
-                statusPill.style.background = 'rgba(239,68,68,0.15)';
-                statusPill.style.color = '#f87171';
-                statusPill.style.border = '1px solid rgba(239,68,68,0.25)';
+        } catch (err) {
+            statusPill.textContent = 'Offline';
+            statusPill.style.background = 'rgba(239,68,68,0.15)';
+            statusPill.style.color = '#f87171';
+            statusPill.style.border = '1px solid rgba(239,68,68,0.25)';
 
-                log.innerHTML = `<span class="cmd">$</span> curl ${API_BASE}/health
+            log.innerHTML = `<span class="cmd">$</span> curl ${API_BASE}/health
 <span class="warn">✖ Backend unreachable</span>`;
-            }
+        }
+    }
+
+    function openChat() {
+        const overlay = document.getElementById('chatOverlay');
+        const messages = document.getElementById('chatMessages');
+        overlay.classList.add('active');
+
+        if (messages.children.length === 0) {
+            addBubble('ai', "Hello! I'm Neural AI. How can I help you today?");
         }
 
-        function openChat() {
-            const overlay = document.getElementById('chatOverlay');
-            const messages = document.getElementById('chatMessages');
-            overlay.classList.add('active');
+        setTimeout(() => {
+            document.getElementById('chatInput').focus();
+        }, 50);
+    }
 
-            if (messages.children.length === 0) {
-                addBubble('ai', "Hello! I'm Neural AI. How can I help you today?");
-            }
+    function closeChat() {
+        document.getElementById('chatOverlay').classList.remove('active');
+    }
 
-            setTimeout(() => {
-                document.getElementById('chatInput').focus();
-            }, 50);
+    function addBubble(role, text) {
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble ${role}`;
+        bubble.textContent = text;
+
+        const messages = document.getElementById('chatMessages');
+        messages.appendChild(bubble);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    /* ===============================
+       AI THINKING HELPERS
+    =============================== */
+    function addThinking() {
+        const wrap = document.createElement('div');
+        wrap.className = 'chat-thinking';
+        wrap.id = 'thinkingIndicator';
+        wrap.innerHTML = `
+            <span>AI is thinking</span>
+            <span class="thinking-dots">
+                <span>.</span><span>.</span><span>.</span>
+            </span>
+        `;
+        const messages = document.getElementById('chatMessages');
+        messages.appendChild(wrap);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function removeThinking() {
+        const el = document.getElementById('thinkingIndicator');
+        if (el) el.remove();
+    }
+
+    async function sendChat() {
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        addBubble('user', msg);
+        input.value = '';
+        input.disabled = true;
+
+        addThinking(); // 🔥 show loading indicator
+
+        try {
+            const res = await fetch(API_BASE + '/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: msg,
+                    use_history: true
+                })
+            });
+
+            const data = await res.json();
+            removeThinking(); // 🔥 remove loading
+            addBubble('ai', data.response || 'No response from backend.');
+        } catch (err) {
+            removeThinking();
+            addBubble('ai', 'Backend unreachable. Check server or CORS.');
+        } finally {
+            input.disabled = false;
+            input.focus();
         }
+    }
 
-        function closeChat() {
-            document.getElementById('chatOverlay').classList.remove('active');
-        }
-
-        function addBubble(role, text) {
-            const bubble = document.createElement('div');
-            bubble.className = `chat-bubble ${role}`;
-            bubble.textContent = text;
-
-            const messages = document.getElementById('chatMessages');
-            messages.appendChild(bubble);
-            messages.scrollTop = messages.scrollHeight;
-        }
-
-        async function sendChat() {
-            const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
-            if (!msg) return;
-
-            addBubble('user', msg);
-            input.value = '';
-
-            try {
-                const res = await fetch(API_BASE + '/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: msg,
-                        use_history: true
-                    })
-                });
-
-                const data = await res.json();
-                addBubble('ai', data.response || 'No response from backend.');
-            } catch (err) {
-                addBubble('ai', 'Backend unreachable. Check server or CORS.');
-            }
-        }
-
-        // Initial backend check
-        checkBackend();
-    </script>
+    // Initial backend check
+    checkBackend();
+</script>
 
 </body>
 </html>

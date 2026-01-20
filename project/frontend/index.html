@@ -475,44 +475,44 @@
 
     <!-- ===============================
          HERO SECTION
-    =============================== -->
-    <section class="hero">
-        <div class="hero-left">
-            <h1>
-                Build smarter apps with
-                <span>Neural AI</span>
-            </h1>
-            <p>
-                A lightweight, production-ready chat interface for your local or cloud-hosted
-                LLM backend. Designed with liquid glass aesthetics, fast performance, and zero
-                build tools — just HTML, CSS, and JavaScript.
-            </p>
-            <div class="hero-actions">
-                <button class="btn btn-primary" onclick="openChat()">
-                    <i class="bi bi-chat-dots-fill"></i>
-                    <span>Start Chatting</span>
-                </button>
-                <button class="btn">
-                    <i class="bi bi-book"></i>
-                    <span>Docs</span>
-                </button>
-            </div>
+=============================== -->
+<section class="hero">
+    <div class="hero-left">
+        <h1>
+            Build smarter apps with
+            <span>Neural AI</span>
+        </h1>
+        <p>
+            A lightweight, production-ready chat interface for your local or cloud-hosted
+            LLM backend. Designed with liquid glass aesthetics, fast performance, and zero
+            build tools — just HTML, CSS, and JavaScript.
+        </p>
+        <div class="hero-actions">
+            <button class="btn btn-primary" onclick="openChat()">
+                <i class="bi bi-chat-dots-fill"></i>
+                <span>Start Chatting</span>
+            </button>
+            <button class="btn" onclick="window.open('https://github.com/xvapai/lks-llm-mini-ec2/README.md', '_blank')">
+                <i class="bi bi-book"></i>
+                <span>Docs</span>
+            </button>
         </div>
+    </div>
 
-        <div class="glass-card">
-            <div class="glass-header">
-                <div class="glass-title">
-                    <i class="bi bi-terminal"></i>
-                    <span>Backend Status</span>
-                </div>
-                <div class="status-pill" id="backendStatus">Checking</div>
+    <div class="glass-card">
+        <div class="glass-header">
+            <div class="glass-title">
+                <i class="bi bi-terminal"></i>
+                <span>Backend Status</span>
             </div>
-            <div class="code-window" id="statusLog">
+            <div class="status-pill" id="backendStatus">Checking</div>
+        </div>
+        <div class="code-window" id="statusLog">
 <span class="cmd">$</span> curl http://localhost:8000/health
 <span class="warn">...</span>
-            </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- ===============================
          FEATURES
